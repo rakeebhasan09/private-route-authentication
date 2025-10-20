@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+	themes: light --default;
+}
+
+.container {
+	margin: auto;
+	padding: 0 15px;
+}
+
+button {
+	cursor: pointer;
+}
+
+.menu-horizontal li a.active {
+	text-decoration: underline;
+}
