@@ -1,10 +1,14 @@
-import { use } from "react";
+import { use, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AuthContext } from "../../Contexts/AuthContext/AuthContext";
 import { toast } from "react-toastify";
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 
 const Login = () => {
-	const { googleLogIn, gitHubLogIn } = use(AuthContext);
+	const [show, setShow] = useState(false);
+	const emailRef = useRef("");
+	const { googleLogIn, gitHubLogIn, loginWithEmailPassword, resetPassword } =
+		use(AuthContext);
 	const location = useLocation();
 	const navigate = useNavigate();
 
@@ -42,6 +46,45 @@ const Login = () => {
 			});
 	};
 
+	// Email Password Login
+	const handleEmailPasswordLogin = (e) => {
+		e.preventDefault();
+		const email = e.target.email.value;
+		const password = e.target.password.value;
+
+		loginWithEmailPassword(email, password)
+			.then(() => {
+				toast.success("Login Successfull.");
+				e.target.reset();
+				navigate(location?.state || "/");
+			})
+			.catch((error) => {
+				const message = error.message;
+				const modifiedMessage = message
+					.split("/")[1]
+					.replaceAll("-", " ")
+					.replace(")", "");
+				toast.error(modifiedMessage);
+			});
+	};
+
+	// Reset Password
+	const handleResetPassword = () => {
+		const email = emailRef.current.value;
+		resetPassword(email)
+			.then(() => {
+				toast.warn("Password reset email sent!");
+			})
+			.catch((error) => {
+				const message = error.message;
+				const modifiedMessage = message
+					.split("/")[1]
+					.replaceAll("-", " ")
+					.replace(")", "");
+				toast.error(modifiedMessage);
+			});
+	};
+
 	return (
 		<div className="container">
 			<div className="card bg-base-100 mx-auto mt-28 md:mt-36 w-full max-w-lg shrink-0 shadow-2xl">
@@ -49,22 +92,43 @@ const Login = () => {
 					Login now!
 				</h1>
 				<div className="card-body">
-					<form>
+					<form onSubmit={handleEmailPasswordLogin}>
 						<fieldset className="fieldset">
 							<label className="label">Email</label>
 							<input
 								type="email"
 								className="input w-full focus:outline-none"
 								placeholder="Email"
+								name="email"
+								ref={emailRef}
 							/>
 							<label className="label">Password</label>
-							<input
-								type="password"
-								className="input w-full focus:outline-none"
-								placeholder="Password"
-							/>
+							<div className="relative">
+								<div className="absolute right-3 top-[50%] translate-y-[-50%] z-10">
+									{show ? (
+										<IoMdEyeOff
+											onClick={() => setShow(!show)}
+											className="text-[22px] cursor-pointer"
+										/>
+									) : (
+										<IoMdEye
+											onClick={() => setShow(!show)}
+											className="text-[22px] cursor-pointer"
+										/>
+									)}
+								</div>
+								<input
+									type={show ? "text" : "password"}
+									className="input w-full focus:outline-none"
+									placeholder="Password"
+									name="password"
+								/>
+							</div>
 							<div>
-								<a className="link link-hover">
+								<a
+									onClick={handleResetPassword}
+									className="link link-hover"
+								>
 									Forgot password?
 								</a>
 							</div>
